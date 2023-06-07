@@ -15,7 +15,8 @@ const { BCRYPT_WORK_FACTOR } = require("../config.js");
 class User {
   /** authenticate user with username, password.
    *
-   * Returns { username, first_name, last_name, email, is_admin }
+   * Returns { username, first_name, last_name, email, listings }
+   *    where listings is [{listing_id, price, description, photo_url}]
    *
    * Throws UnauthorizedError is user not found or wrong password.
    **/
@@ -24,13 +25,20 @@ class User {
     // try to find the user first
     const result = await db.query(
       `
-        SELECT username,
-               password,
-               first_name AS "firstName",
-               last_name  AS "lastName",
-               email,
-               is_admin   AS "isAdmin"
-        FROM users
+      SELECT u.username,
+      u.password,
+      u.first_name AS "firstName",
+      u.last_name AS "lastName",
+      u.email,
+      u.bookings,
+      l.listing_id,
+      l.price,
+      l.description,
+      l.photo_url
+FROM users u
+JOIN bookings b ON u.username = b.booking_user
+LEFT JOIN listings l ON u.username = l.host_user
+
         WHERE username = $1`,
       [username]
     );
@@ -42,7 +50,20 @@ class User {
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid === true) {
         delete user.password;
-        return user;
+
+        const listings = user.map(
+          ({listing_id, price, description, photo_url}) => ({
+            listing_id, price, description, photo_url
+          })
+        )
+          return {
+            username: user[0].username,
+            first_name: user[0].first_name,
+            last_name: user[0].last_name,
+            email: user[0].email,
+            logoUrl: user[0].logoUrl,
+            listings: listings
+          }
       }
     }
 
@@ -56,14 +77,7 @@ class User {
    * Throws BadRequestError on duplicates.
    **/
 
-  static async register({
-    username,
-    password,
-    firstName,
-    lastName,
-    email,
-    isAdmin,
-  }) {
+  static async register({ username, password, firstName, lastName, email }) {
     const duplicateCheck = await db.query(
       `
         SELECT username
@@ -85,16 +99,15 @@ class User {
                  password,
                  first_name,
                  last_name,
-                 email,
-                 is_admin)
-                VALUES ($1, $2, $3, $4, $5, $6)
+                 email
+                 )
+                VALUES ($1, $2, $3, $4, $5)
                 RETURNING
                     username,
                     first_name AS "firstName",
                     last_name AS "lastName",
-                    email,
-                    is_admin AS "isAdmin"`,
-      [username, hashedPassword, firstName, lastName, email, isAdmin]
+                    email`,
+      [username, hashedPassword, firstName, lastName, email]
     );
 
     const user = result.rows[0];
@@ -102,108 +115,7 @@ class User {
     return user;
   }
 
-  /** Find all users.
-   *
-   * Returns [{ username, first_name, last_name, email, is_admin }, ...]
-   **/
-
-  static async findAll() {
-    const result = await db.query(`
-        SELECT username,
-               first_name AS "firstName",
-               last_name  AS "lastName",
-               email,
-               is_admin   AS "isAdmin"
-        FROM users
-        ORDER BY username`);
-
-    return result.rows;
-  }
-
-  /** Given a username, return data about user.
-   *
-   * Returns { username, first_name, last_name, is_admin, jobs }
-   *   where jobs is { id, title, company_handle, company_name, state }
-   *
-   * Throws NotFoundError if user not found.
-   **/
-
-  static async get(username) {
-    const userRes = await db.query(
-      `
-        SELECT username,
-               first_name AS "firstName",
-               last_name  AS "lastName",
-               email,
-               is_admin   AS "isAdmin"
-        FROM users
-        WHERE username = $1`,
-      [username]
-    );
-
-    const user = userRes.rows[0];
-
-    if (!user) throw new NotFoundError(`No user: ${username}`);
-
-    const userApplicationsRes = await db.query(
-      `
-        SELECT a.job_id
-        FROM applications AS a
-        WHERE a.username = $1`,
-      [username]
-    );
-
-    user.applications = userApplicationsRes.rows.map((a) => a.job_id);
-    return user;
-  }
-
-  /** Update user data with `data`.
-   *
-   * This is a "partial update" --- it's fine if data doesn't contain
-   * all the fields; this only changes provided ones.
-   *
-   * Data can include:
-   *   { firstName, lastName, password, email, isAdmin }
-   *
-   * Returns { username, firstName, lastName, email, isAdmin }
-   *
-   * Throws NotFoundError if not found.
-   *
-   * WARNING: this function can set a new password or make a user an admin.
-   * Callers of this function must be certain they have validated inputs to this
-   * or a serious security risks are opened.
-   */
-
-  static async update(username, data) {
-    if (data.password) {
-      data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
-    }
-
-    const { setCols, values } = sqlForPartialUpdate(data, {
-      firstName: "first_name",
-      lastName: "last_name",
-      isAdmin: "is_admin",
-    });
-    const usernameVarIdx = "$" + (values.length + 1);
-
-    const querySql = `
-        UPDATE users
-        SET ${setCols}
-        WHERE username = ${usernameVarIdx}
-        RETURNING username,
-            first_name AS "firstName",
-            last_name AS "lastName",
-            email,
-            is_admin AS "isAdmin"`;
-    const result = await db.query(querySql, [...values, username]);
-    const user = result.rows[0];
-
-    if (!user) throw new NotFoundError(`No user: ${username}`);
-
-    delete user.password;
-    return user;
-  }
-
+  
   /** Delete given user from database; returns undefined. */
 
   static async remove(username) {
@@ -219,8 +131,9 @@ class User {
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
-
-  /** Apply for job: update db, returns undefined.
+  
+//TODO:
+  /** Bookings: update db, returns undefined.
    *
    * - username: username applying for job
    * - jobId: job id

@@ -8,13 +8,13 @@ CREATE TABLE users (
   is_host BOOLEAN NOT NULL DEFAULT FALSE,
   bookings INT[]
 );
-
+-- TODO: add second PK to prevent double listings
 CREATE TABLE listings (
   listing_id SERIAL PRIMARY KEY,
   host_user VARCHAR(25) REFERENCES users(username),
   price INT NOT NULL,
   description TEXT NOT NULL,
-  photo_url VARCHAR(100) NOT NULL
+  photo_url VARCHAR(100) NOT NULL 
 );
 
 CREATE TABLE messages (
