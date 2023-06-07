@@ -1,21 +1,50 @@
-"use strict";
+'use strict';
 
-/** Routes for s3 upload. */
-const express = require(`express`);
-const AWS = require(`aws-sdk`);
-const multer = require(`multer`);
-const storage = multer.memoryStorage()
-const upload = multer({ storage });
+const express = require('express');
+const AWS = require('aws-sdk');
+const multer = require('multer');
+const { v4: uuidv4 } = require('uuid');
 
-const router = new express.Router();
+const router = express.Router();
 
 // Configure AWS
 AWS.config.update({
-  accessKeyId: process.env.ACCESS_KEY,
-  secretAccessKey: process.env.SECRET_KEY,
-  region: process.env.REGION,
+  accessKeyId: process.env.AWS_ACCESS_KEY,
+  secretAccessKey: process.env.AWS_SECRET_KEY,
+  region: process.env.AWS_REGION,
 });
 const s3 = new AWS.S3();
+
+// Multer middleware for handling multipart/form-data
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
+
+// Generate random UUID for photo upload
+const randomUUID = uuidv4();
+
+// POST route for uploading a single photo
+router.post('/', upload.single('photo'), async function (req, res, next) {
+  try {
+    const s3data = {
+      Bucket: process.env.AWS_BUCKET_NAME,
+      Key: `${randomUUID}_${req.file.originalname}`,
+      Body: req.file.buffer,
+    };
+    const uploadedImg = await s3.upload(s3data).promise();
+
+    res.send('Successfully uploaded ' + req.file.originalname);
+  } catch (err) {
+    console.error('Error uploading photo:', err);
+    res.status(500).json({ error: 'Failed to upload photo' });
+  }
+});
+
+module.exports = router;
+
+
+
+
+
 // console.log("s3 ===", s3);
 // console.log("s3.upload", s3.upload);
 
@@ -34,26 +63,3 @@ const s3 = new AWS.S3();
 //     },
 //   }),
 // });
-console.log("upload ===>", upload);
-3;
-// POST route for uploading single photo
-router.post(`/`, upload.single(`photo`), 
-async function (req, res, next) {
-  console.log("entered .post");
-  console.log('s3Data verification', req.file.originalname,
-  req.file.buffer)
-  const s3data = {
-    Bucket: process.env.BUCKET_NAME,
-    Key: toString(uuid()) + req.file.originalname ,
-    Body: req.file.buffer
-  };
-  const uploadedImg = await s3.upload(s3data).promise();
-  console.log("uploadedImg====", uploadedImg.Location);
-  res.send(`Successfully uploaded ` + req.file.originalname);
-});
-
-// app.listen(3001, function () {
-//   console.log(`Server listening on port 3001!`);
-// });
-
-module.exports = router;

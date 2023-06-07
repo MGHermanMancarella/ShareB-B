@@ -5,6 +5,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
+console.log("AWS_ACCESS_KEY ===> ", process.env.AWS_SECRET_KEY)
 
 const uploadRoutes = require("./routes/upload");
 

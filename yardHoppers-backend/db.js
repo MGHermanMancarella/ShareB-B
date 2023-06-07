@@ -1,6 +1,6 @@
 "use strict";
 
-/** Database setup for yard-hoppers. */
+/** Database setup for yard_hoppers. */
 
 const { Client } = require("pg");
 const { getDatabaseUri } = require("./config");
