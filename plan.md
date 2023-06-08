@@ -15,18 +15,18 @@ As a bonus, include an interface with a map that updates with listings when move
 2. Navigation / Routes
     - Home
     - Listings
-    - Login 
+    - Login
       - User info
         - name, location, owned listings
     - Register (login on successful reg)
-    - PostListingForm 
+    - PostListingForm
       - Photos (s3 access images)
       - Price
       - Details
 3. Booking
 4. Messages
 5. Map
-   
+
 
 **FrontEnd**
 React
@@ -41,13 +41,32 @@ Node >>> Express
 - Authentication: JWT
 - SQL queries and updates
   - JSONSchema
-  - 
+  -
 
 **DataBase**
-PostGreSQL 
+PostGreSQL
 Amazon s3 (image storage)
 
-1. Comp Hierarchy 
+1. Comp Hierarchy
 2. DB structure
 3. Create React App
 4. Write SQL DB file
+
+
+###
+Nice to Have =>> Verson 2.0
+
+<ul>
+<li>User profile -> user details, edit user details form</li>
+
+<li>Host auth- additional auth for host to create bookings</li>
+
+<li>Allow users to upload more than one photo</li>
+
+<li>Prohibit duplicate listings</li>
+
+<li>Update details about a listing</li>
+
+
+</ul>
+
