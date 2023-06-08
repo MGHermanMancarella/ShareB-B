@@ -3,21 +3,25 @@
 /** Express app for jobly. */
 
 const express = require("express");
-// const cors = require("cors");
+const cors = require("cors");
 require("dotenv").config();
-console.log("AWS_ACCESS_KEY ===> ", process.env.AWS_SECRET_KEY)
+const morgan = require('morgan')
+const { authenticateJWT } = require("./middleware/auth");
+const app = express();
 
 const uploadRoutes = require("./routes/upload");
 const authRoutes = require('./routes/auth');
+const listingRoutes = require('./routes/listings')
 
-const app = express();
-// app.use(cors());
-// app.use(express.json());
-// app.use(morgan("tiny"));
+app.use(cors());
+app.use(express.json());
+app.use(morgan("tiny"));
 app.use(authenticateJWT);
 
 app.use("/upload", uploadRoutes);
 app.use('/auth', authRoutes);
+app.use('/listings', listingRoutes);
+
 
 
 /** Handle 404 errors -- this matches everything */

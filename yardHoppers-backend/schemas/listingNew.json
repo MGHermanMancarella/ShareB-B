@@ -7,20 +7,37 @@
       "type": "integer",
       "minimum": 0
     },
-    "companyHandle": {
+    "host_user": {
       "type": "string",
       "minLength": 1,
       "maxLength": 30
     },
- 
-    "equity": {
+    "city": {
       "type": "string",
-      "pattern": "0|(0?\\.[0-9]+)"
+      "maxLength": 30
+    },
+    "zip": {
+      "type": "string",
+      "pattern": "0|(0?\\.[0-9]+)",
+      "maxLength": 5
+    },
+    "description": {
+      "type": "string",
+      "minLength": 10
+    },
+    "photo_url": {
+      "type": "string",
+      "maxLength": 500,
+      "format": "uri"
     }
   },
   "additionalProperties": false,
   "required": [
-    "title",
-    "companyHandle"
+    "photo_url",
+    "price",
+    "host_user",
+    "city",
+    "zip",
+    "description"
   ]
 }

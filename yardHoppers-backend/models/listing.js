@@ -9,24 +9,41 @@ const { sqlForPartialUpdate, sqlWhereClause } = require("../helpers/sql");
 class Listing {
   /** Create a Listing (from data), update db, return new listing data.
    *
-   * data should be { listing_id, host_user, price, description, photo_url }
+   * data should be { host_user, 
+   *                  price, 
+   *                  description, 
+   *                  photo_url, 
+   *                  city, 
+   *                  state, 
+   *                  zip, 
+   *                  address  
+   *                 }
    *
-   * Returns { listing_id, host_user, price, description, photo_url }
+   * Returns { listing_id, 
+   *           host_user, 
+   *           price, 
+   *           description, 
+   *           photo_url, 
+   *           city, 
+   *           state, 
+   *           zip, 
+   *           address  
+   *          }
    *
    * Throws BadRequestError if listing already in database.
    * */
 
-  static async create({ host_user, price, description, photo_url }) {
-    // const duplicateCheck = await db.query(
-    //   `
-    //     SELECT handle
-    //     FROM listings
-    //     WHERE handle = $1`,
-    //   [handle]
-    // )
+  static async create({ host_user, price, description, photo_url, city, state, zip, address }) {
+    const duplicateCheck = await db.query(
+      `
+        SELECT address
+        FROM listings
+        WHERE address = $1`,
+      [address]
+    )
 
-    // if (duplicateCheck.rows[0])
-    //   throw new BadRequestError(`Duplicate listing: ${handle}`)
+    if (duplicateCheck.rows[0])
+      throw new BadRequestError(`Duplicate listing at this address: ${address}`)
 
     const result = await db.query(
       `
@@ -56,10 +73,22 @@ class Listing {
 
   /** Find all listings by default. Accepts search terms in the query string.
    *
-   * Returns [{ listing_id, host_user, price, description, photo_url } ...]
+   * Returns [{ listing_id, 
+   *             host_user, 
+   *             price, 
+   *             description, 
+   *             photo_url, 
+   *             city, 
+   *             state, 
+   *             zip, 
+   *             address  
+   *            } 
+   *        ...]
    *
-   * Acceptable search terms:
-   *   nameLike: string
+   * Acceptable search terms: (strings)
+   *   descriptionLike
+   *   city
+   *   state
    *
    * Throws NotFoundError if not found.
    *
@@ -136,31 +165,31 @@ class Listing {
    *
    * Data can include: {name, description, numEmployees, logoUrl}
    *
-   * Returns {handle, name, description, numEmployees, logoUrl}
+   * Returns {listingId, name, description, numEmployees, logoUrl}
    *
    * Throws NotFoundError if not found.
    */
 
-  static async update(handle, data) {
+  static async update(listingId, data) {
     const { setCols, values } = sqlForPartialUpdate(data, {
       photoUrl: "photo_url",
     });
-    const handleVarIdx = "$" + (values.length + 1);
+    const listingIdVarIdx = "$" + (values.length + 1);
 
     const querySql = `
         UPDATE listings
         SET ${setCols}
-        WHERE handle = ${handleVarIdx}
+        WHERE listingId = ${listingIdVarIdx}
         RETURNING
         listing_id,
         host_user,
         price,
         description,
         photo_url as photoUrl`;
-    const result = await db.query(querySql, [...values, handle]);
+    const result = await db.query(querySql, [...values, listingId]);
     const listing = result.rows[0];
 
-    if (!listing) throw new NotFoundError(`No listing: ${handle}`);
+    if (!listing) throw new NotFoundError(`No listing: ${listingId}`);
 
     return listing;
   }
@@ -181,58 +210,10 @@ class Listing {
     );
     const listing = result.rows[0];
 
-    if (!listing) throw new NotFoundError(`No listing: ${handle}`);
+    if (!listing) throw new NotFoundError(`No listing: ${listingId}`);
   }
 
-  /**  Accepts an object of keys to filter by.
-   *      nameLike (will find case-insensitive, partial matches)
-   *      minEmployees
-   *      maxEmployees
-   *
-   *  Also accepts a list of keys with values of equivalent SQL phrases
-   *
-   *  Returns an object containing a SQL WHERE clause and values to be inserted
-   *  into this clause via a parameterized array
-   *
-   *  Input ex:
-   *     ({"minEmployees":10, "maxEmployees":100, "nameLike":"net"},
-   *     {minEmployees: 'employees <', maxEmployees: 'employees >',
-   *     nameLike: 'name ILIKE'}
-   *
-   *  Returns:
-   *   {
-   *  whereClause: 'WHERE num_employees > $1 AND num_employees < $2 AND name ILIKE $3'
-   *  filterValues: [10, 100, "'%net%'"]
-   *   }
-   */
-
-  static sqlWhereClause(filterBy, jsToSql) {
-    let keys = Object.keys(filterBy);
-    if (keys.length === 0) {
-      return { whereClause: "", filterValues: [] };
-    }
-
-    // Add %% to description, city and state search query
-    if ("descriptionLike" in filterBy) {
-      filterBy["descriptionLike"] = "%" + filterBy["descriptionLike"] + "%";
-    }
-    if ("city" in filterBy) {
-      filterBy["city"] = "%" + filterBy["city"] + "%";
-    }
-    if ("state" in filterBy) {
-      filterBy["state"] = "%" + filterBy["state"] + "%";
-    }
-
-    // sqlClauses is an array of strings that can proceed WHERE in an SQL query
-    const sqlClauses = keys.map(
-      (colName, idx) => `${jsToSql[colName]} ILIKE $${idx + 1}`
-    );
-
-    return {
-      whereClause: "WHERE " + sqlClauses.join(" AND "),
-      filterValues: Object.values(filterBy),
-    };
-  }
+  
 }
 
 /**static sqlWhereClause(filterBy, jsToSql) {

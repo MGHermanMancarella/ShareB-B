@@ -3,10 +3,9 @@ CREATE TABLE users (
   password TEXT NOT NULL,
   first_name TEXT NOT NULL,
   last_name TEXT NOT NULL,
-  email TEXT NOT NULL
-    CHECK (position('@' IN email) > 1),
+  email TEXT NOT NULL CHECK (position('@' IN email) > 1),
   is_host BOOLEAN NOT NULL DEFAULT FALSE,
-  bookings INT[]
+  bookings INT []
 );
 -- TODO: add second PK to prevent double listings
 CREATE TABLE listings (
@@ -16,10 +15,10 @@ CREATE TABLE listings (
   city VARCHAR(30) NOT NULL,
   state VARCHAR(30) NOT NULL,
   zipcode CHAR(5) CHECK (zipcode ~ '^[0-9]{5}$'),
+  UNIQUE address VARCHAR(20),
   description TEXT NOT NULL,
   photo_url VARCHAR(100) NOT NULL
 );
-
 CREATE TABLE messages (
   msg_id SERIAL PRIMARY KEY,
   listing_id INT REFERENCES listings(listing_id),
@@ -27,7 +26,6 @@ CREATE TABLE messages (
   read BOOLEAN NOT NULL DEFAULT FALSE,
   msg_body TEXT NOT NULL
 );
-
 CREATE TABLE bookings (
   booking_id SERIAL PRIMARY KEY,
   listing_id INT REFERENCES listings(listing_id),
@@ -35,6 +33,3 @@ CREATE TABLE bookings (
   check_in_date DATE NOT NULL,
   check_out_date DATE NOT NULL
 );
-
-
-

@@ -68,31 +68,31 @@ router.get("/", async function (req, res, next) {
   return res.json({ listings });
 });
 
-/** GET /[handle]  =>  { listing }
+/** GET /[listing_id]  =>  { listing }
  *
- *  Company is { handle, name, description, numEmployees, logoUrl, jobs }
+ *  Company is { listing_id, name, description, numEmployees, logoUrl, jobs }
  *   where jobs is [{ id, title, salary, equity }, ...]
  *
  * Authorization required: none
  */
 
-router.get("/:handle", async function (req, res, next) {
-  const listing = await Company.get(req.params.handle);
+router.get("/:listing_id", async function (req, res, next) {
+  const listing = await Company.get(req.params.listing_id);
   return res.json({ listing });
 });
 
-/** PATCH /[handle] { fld1, fld2, ... } => { listing }
+/** PATCH /[listing_id] { fld1, fld2, ... } => { listing }
  *
  * Patches listing data.
  *
  * fields can be: { name, description, numEmployees, logo_url }
  *
- * Returns { handle, name, description, numEmployees, logo_url }
+ * Returns { listing_id, name, description, numEmployees, logo_url }
  *
  * Authorization required: admin
  */
 
-router.patch("/:handle", ensureAdmin, async function (req, res, next) {
+router.patch("/:listing_id", ensureAdmin, async function (req, res, next) {
   const validator = jsonschema.validate(req.body, listingUpdateSchema, {
     required: true,
   });
@@ -101,18 +101,18 @@ router.patch("/:handle", ensureAdmin, async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const listing = await Company.update(req.params.handle, req.body);
+  const listing = await Company.update(req.params.listing_id, req.body);
   return res.json({ listing });
 });
 
-/** DELETE /[handle]  =>  { deleted: handle }
+/** DELETE /[listing_id]  =>  { deleted: listing_id }
  *
  * Authorization: admin
  */
 
-router.delete("/:handle", ensureAdmin, async function (req, res, next) {
-  await Company.remove(req.params.handle);
-  return res.json({ deleted: req.params.handle });
+router.delete("/:listing_id", ensureAdmin, async function (req, res, next) {
+  await Company.remove(req.params.listing_id);
+  return res.json({ deleted: req.params.listing_id });
 });
 
 module.exports = router;
