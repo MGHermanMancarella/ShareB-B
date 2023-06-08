@@ -1,6 +1,6 @@
 -- Seed file for yard_hoppers
 
--- Seed 20 users
+-- Insert 20 users
 INSERT INTO users (username, password, first_name, last_name, email, is_host)
 VALUES
   ('user1', 'password1', 'John', 'Doe', 'john.doe@example.com', FALSE),
@@ -25,13 +25,47 @@ VALUES
   ('user20', 'password20', 'Charlotte', 'Adams', 'charlotte.adams@example.com', FALSE);
 
 -- Insert 5 listings
-INSERT INTO listings (host_user, price, description, photo_url)
+INSERT INTO listings (host_user, price, city, state, zipcode, description, photo_url)
 VALUES
-  ('user5', 100, 'Listing 1', 'http://example.com/listing1.jpg'),
-  ('user7', 150, 'Listing 2', 'http://example.com/listing2.jpg'),
-  ('user10', 200, 'Listing 3', 'http://example.com/listing3.jpg'),
-  ('user13', 120, 'Listing 4', 'http://example.com/listing4.jpg'),
-  ('user16', 180, 'Listing 5', 'http://example.com/listing5.jpg');
+  ('user5',
+  100,
+  'Denver',
+  'Colorado',
+  '80210',
+  'Shabby chic bitters iPhone, yuccie adaptogen shaman dreamcatcher etsy lo-fi fam chartreuse taiyaki umami squid.',
+  'http://example.com/listing1.jpg'),
+
+  ('user7',
+  150,
+  'Denver',
+  'Colorado',
+  '80210',
+  'Tonx helvetica mumblecore typewriter, readymade PBR&B polaroid taiyaki DIY deep v',
+  'http://example.com/listing2.jpg'),
+
+  ('user10',
+  200,
+  'Denver',
+  'Colorado',
+  '80210',
+  'Pickled tonx chartreuse, trust fund pop-up hot chicken post-ironic selvage 8-bit schlitz',
+  'http://example.com/listing3.jpg'),
+
+  ('user13',
+  120,
+  'Denver',
+  'Colorado',
+  '80210',
+  'Banjo venmo intelligentsia man braid la croix before they sold out YOLO pinterest',
+  'http://example.com/listing4.jpg'),
+
+  ('user16',
+  180,
+  'Denver',
+  'Colorado',
+  '80210',
+  'Salvia meggings plaid man bun poke squid keytar paleo pug same unicorn skateboard asymmetrical vexillologist.',
+  'http://example.com/listing5.jpg');
 
 -- Insert 5 messages
 INSERT INTO messages (listing_id, from_user, read, msg_body)

@@ -13,8 +13,11 @@ CREATE TABLE listings (
   listing_id SERIAL PRIMARY KEY,
   host_user VARCHAR(25) REFERENCES users(username),
   price INT NOT NULL,
+  city VARCHAR(30) NOT NULL,
+  state VARCHAR(30) NOT NULL,
+  zipcode CHAR(5) CHECK (zipcode ~ '^[0-9]{5}$'),
   description TEXT NOT NULL,
-  photo_url VARCHAR(100) NOT NULL 
+  photo_url VARCHAR(100) NOT NULL
 );
 
 CREATE TABLE messages (
