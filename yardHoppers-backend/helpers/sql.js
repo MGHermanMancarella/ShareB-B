@@ -32,6 +32,7 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
     setCols: cols.join(", "),
     values: Object.values(dataToUpdate),
   };
+}
 
   /**  Accepts an object of keys to filter by.
    *      nameLike (will find case-insensitive, partial matches)
@@ -82,6 +83,5 @@ function sqlForPartialUpdate(dataToUpdate, jsToSql) {
       filterValues: Object.values(filterBy),
     };
   }
-}
 
 module.exports = { sqlForPartialUpdate, sqlWhereClause };
