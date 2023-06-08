@@ -16,7 +16,11 @@
       "type": "string",
       "maxLength": 30
     },
-    "zip": {
+    "state": {
+      "type": "string",
+      "maxLength": 30
+    },
+    "zipcode": {
       "type": "string",
       "pattern": "0|(0?\\.[0-9]+)",
       "maxLength": 5
@@ -37,7 +41,7 @@
     "price",
     "host_user",
     "city",
-    "zip",
+    "zipcode",
     "description"
   ]
 }

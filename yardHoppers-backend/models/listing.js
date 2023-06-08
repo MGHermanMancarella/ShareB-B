@@ -9,41 +9,49 @@ const { sqlForPartialUpdate, sqlWhereClause } = require("../helpers/sql");
 class Listing {
   /** Create a Listing (from data), update db, return new listing data.
    *
-   * data should be { host_user, 
-   *                  price, 
-   *                  description, 
-   *                  photo_url, 
-   *                  city, 
-   *                  state, 
-   *                  zip, 
-   *                  address  
+   * data should be { host_user,
+   *                  price,
+   *                  description,
+   *                  photo_url,
+   *                  city,
+   *                  state,
+   *                  zip,
+   *                  address
    *                 }
    *
-   * Returns { listing_id, 
-   *           host_user, 
-   *           price, 
-   *           description, 
-   *           photo_url, 
-   *           city, 
-   *           state, 
-   *           zip, 
-   *           address  
+   * Returns { listing_id,
+   *           host_user,
+   *           price,
+   *           description,
+   *           photo_url,
+   *           city,
+   *           state,
+   *           zip,
+   *           address
    *          }
    *
    * Throws BadRequestError if listing already in database.
    * */
 
-  static async create({ host_user, price, description, photo_url, city, state, zip, address }) {
-    const duplicateCheck = await db.query(
-      `
-        SELECT address
-        FROM listings
-        WHERE address = $1`,
-      [address]
-    )
+  static async create({
+    host_user,
+    price,
+    description,
+    photo_url,
+    city,
+    state,
+    zipcode
+  }) {
+    // const duplicateCheck = await db.query(
+    //   `
+    //     SELECT address
+    //     FROM listings
+    //     WHERE address = $1`,
+    //   [address]
+    // )
 
-    if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate listing at this address: ${address}`)
+    // if (duplicateCheck.rows[0])
+    //   throw new BadRequestError(`Duplicate listing at this address: ${address}`)
 
     const result = await db.query(
       `
@@ -54,7 +62,7 @@ class Listing {
                                         zipcode,
                                         description,
                                         photo_url)
-                VALUES ($1, $2, $3, $4)
+                VALUES ($1, $2, $3, $4, $5, $6, $7)
                 RETURNING
                 listing_id,
                 host_user,
@@ -73,16 +81,16 @@ class Listing {
 
   /** Find all listings by default. Accepts search terms in the query string.
    *
-   * Returns [{ listing_id, 
-   *             host_user, 
-   *             price, 
-   *             description, 
-   *             photo_url, 
-   *             city, 
-   *             state, 
-   *             zip, 
-   *             address  
-   *            } 
+   * Returns [{ listing_id,
+   *             host_user,
+   *             price,
+   *             description,
+   *             photo_url,
+   *             city,
+   *             state,
+   *             zip,
+   *             address
+   *            }
    *        ...]
    *
    * Acceptable search terms: (strings)
@@ -212,8 +220,6 @@ class Listing {
 
     if (!listing) throw new NotFoundError(`No listing: ${listingId}`);
   }
-
-  
 }
 
 /**static sqlWhereClause(filterBy, jsToSql) {
