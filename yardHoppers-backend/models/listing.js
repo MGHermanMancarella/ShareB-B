@@ -30,18 +30,24 @@ class Listing {
 
     const result = await db.query(
       `
-                INSERT INTO listings (host_user, 
-                                        price, 
-                                        description, 
+                INSERT INTO listings (host_user,
+                                        price,
+                                        city,
+                                        state,
+                                        zipcode,
+                                        description,
                                         photo_url)
                 VALUES ($1, $2, $3, $4)
                 RETURNING
-                listing_id, 
-                host_user, 
-                price, 
-                description, 
+                listing_id,
+                host_user,
+                price,
+                city,
+                state,
+                zipcode,
+                description,
                 photo_url`,
-      [host_user, price, description, photo_url]
+      [host_user, price, city, state, zipcode, description, photo_url]
     );
     const listing = result.rows[0];
 
@@ -60,22 +66,20 @@ class Listing {
    **/
 
   static async findAll(filter = {}) {
-    // if (filter.minEmployees > filter.maxEmployees) {
-    //   throw new BadRequestError(
-    //     "minEmployees cannot be larger than maxEmployees"
-    //   );
-    // }
-
     const { whereClause, filterValues } = sqlWhereClause(filter, {
-      nameLike: "name ILIKE",
+      listingId: "listing_id",
+      hostUser: "host_user",
     });
 
     const listingsRes = await db.query(
       `
-        SELECT listing_id, 
-        host_user, 
-        price, 
-        description, 
+        SELECT listing_id,
+        host_user,
+        price,
+        city,
+        state,
+        zipcode,
+        description,
         photo_url
         FROM listings
         ${whereClause}
@@ -88,24 +92,30 @@ class Listing {
 
   /** Given a listing_id, return data about listing.
    *
-   * Returns { listing_id, 
-                host_user, 
-                price, 
-                description, 
-                photo_url 
+   * Returns { listing_id,
+                host_user,
+                price,
+                city,
+                state,
+                zipcode,
+                description,
+                photo_url
                 }
-   *   
+   *
    * Throws NotFoundError if not found.
    **/
 
   static async get(listing_id) {
     const listingRes = await db.query(
       `
-      SELECT 
-            listing_id, 
-            host_user, 
-            price, 
-            description, 
+      SELECT
+            listing_id,
+            host_user,
+            price,
+            city,
+            state,
+            zipcode,
+            description,
             photo_url
       FROM listings
       WHERE listing_id = $1`,
@@ -120,7 +130,7 @@ class Listing {
   }
 
   /** Update listing data with `data`.
-   * 
+   *
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
@@ -133,7 +143,7 @@ class Listing {
 
   static async update(handle, data) {
     const { setCols, values } = sqlForPartialUpdate(data, {
-      photoUrl: "photo_url"
+      photoUrl: "photo_url",
     });
     const handleVarIdx = "$" + (values.length + 1);
 
@@ -202,26 +212,20 @@ class Listing {
       return { whereClause: "", filterValues: [] };
     }
 
-    // Add %% to name search query
-    if ("nameLike" in filterBy) {
-      filterBy["nameLike"] = "%" + filterBy["nameLike"] + "%";
+    // Add %% to description, city and state search query
+    if ("descriptionLike" in filterBy) {
+      filterBy["descriptionLike"] = "%" + filterBy["descriptionLike"] + "%";
     }
-    // if ("title" in filterBy) {
-    //   filterBy["title"] = "%" + filterBy["title"] + "%";
-    // }
-    // if ("hasEquity" in filterBy) {
-    //   if (filterBy["hasEquity"] === true) {
-    //     filterBy["hasEquity"] = 0;
-    //   }
-    //   if (filterBy["hasEquity"] === false) {
-    //     delete filterBy.hasEquity;
-    //     keys = Object.keys(filterBy);
-    //   }
-    // }
+    if ("city" in filterBy) {
+      filterBy["city"] = "%" + filterBy["city"] + "%";
+    }
+    if ("state" in filterBy) {
+      filterBy["state"] = "%" + filterBy["state"] + "%";
+    }
 
     // sqlClauses is an array of strings that can proceed WHERE in an SQL query
     const sqlClauses = keys.map(
-      (colName, idx) => `${jsToSql[colName]} $${idx + 1}`
+      (colName, idx) => `${jsToSql[colName]} ILIKE $${idx + 1}`
     );
 
     return {
@@ -230,5 +234,34 @@ class Listing {
     };
   }
 }
+
+/**static sqlWhereClause(filterBy, jsToSql) {
+  let keys = Object.keys(filterBy);
+  if (keys.length === 0) {
+    return { whereClause: "", filterValues: [] };
+  }
+
+  // Add %% to description, city and state search query
+  if ("descriptionLike" in filterBy) {
+    filterBy["descriptionLike"] = "%" + filterBy["descriptionLike"] + "%";
+  }
+  if ("city" in filterBy) {
+    filterBy["city"] = "%" + filterBy["city"] + "%";
+  }
+  if ("state" in filterBy) {
+    filterBy["state"] = "%" + filterBy["state"] + "%";
+  }
+
+  // sqlClauses is an array of strings that can proceed WHERE in an SQL query
+  const sqlClauses = keys.map(
+    (colName, idx) => `${jsToSql[colName]} ILIKE $${idx + 1}`
+  );
+
+  return {
+    whereClause: "WHERE " + sqlClauses.join(" AND "),
+    filterValues: Object.values(filterBy),
+  };
+}
+ */
 
 module.exports = Listing;
