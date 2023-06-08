@@ -23,47 +23,56 @@ class User {
 
   static async authenticate(username, password) {
     // try to find the user first
+    console.log("MADE IT HERE");
     const result = await db.query(
       `
       SELECT u.username,
-      u.password,
-      u.first_name AS "firstName",
-      u.last_name AS "lastName",
-      u.email,
-      u.bookings,
-      l.listing_id,
-      l.price,
-      l.description,
-      l.photo_url
-FROM users u
-JOIN bookings b ON u.username = b.booking_user
-LEFT JOIN listings l ON u.username = l.host_user
-
-        WHERE username = $1`,
+             u.password,
+             u.first_name AS "firstName",
+             u.last_name AS "lastName",
+             u.email,
+             u.bookings,
+             l.listing_id,
+             l.price,
+             l.description,
+             l.photo_url
+      FROM users u
+      LEFT JOIN listings l ON u.username = l.host_user
+      WHERE u.username = $1`,
       [username]
     );
 
     const user = result.rows[0];
+    console.log("user ===> ", user);
 
     if (user) {
       // compare hashed password to a new hash from password
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid === true) {
         delete user.password;
+        const listings = [];
 
-        const listings = user.map(
-          ({listing_id, price, description, photo_url}) => ({
-            listing_id, price, description, photo_url
+
+        if (user.bookings) {
+
+        listings = user.map(
+          ({ listing_id, price, description, photo_url }) => ({
+            listing_id,
+            price,
+            description,
+            photo_url,
           })
         )
-          return {
-            username: user[0].username,
-            first_name: user[0].first_name,
-            last_name: user[0].last_name,
-            email: user[0].email,
-            logoUrl: user[0].logoUrl,
-            listings: listings
-          }
+        }
+
+
+        return {
+          username: user.username,
+          first_name: user.first_name,
+          last_name: user.last_name,
+          email: user.email,
+          listings: listings
+        };
       }
     }
 
@@ -115,7 +124,6 @@ LEFT JOIN listings l ON u.username = l.host_user
     return user;
   }
 
-  
   /** Delete given user from database; returns undefined. */
 
   static async remove(username) {
@@ -131,8 +139,8 @@ LEFT JOIN listings l ON u.username = l.host_user
 
     if (!user) throw new NotFoundError(`No user: ${username}`);
   }
-  
-//TODO:
+
+  //TODO:
   /** Bookings: update db, returns undefined.
    *
    * - username: username applying for job
@@ -172,3 +180,12 @@ LEFT JOIN listings l ON u.username = l.host_user
 }
 
 module.exports = User;
+
+/**
+ * l.listing_id,
+      l.price,
+      l.description,
+      l.photo_url
+
+       LEFT JOIN listings l ON u.username = l.host_user
+ */

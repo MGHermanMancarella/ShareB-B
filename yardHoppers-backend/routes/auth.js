@@ -20,6 +20,7 @@ const { BadRequestError } = require("../expressError");
  */
 
 router.post("/token", async function (req, res, next) {
+ 
   const validator = jsonschema.validate(
     req.body,
     userAuthSchema,
@@ -31,7 +32,9 @@ router.post("/token", async function (req, res, next) {
   }
 
   const { username, password } = req.body;
+
   const user = await User.authenticate(username, password);
+
   const token = createToken(user);
   return res.json({ token });
 });
@@ -57,7 +60,7 @@ router.post("/register", async function (req, res, next) {
     throw new BadRequestError(errs);
   }
 
-  const newUser = await User.register({ ...req.body, isAdmin: false });
+  const newUser = await User.register({ ...req.body});
   const token = createToken(newUser);
   return res.status(201).json({ token });
 });
