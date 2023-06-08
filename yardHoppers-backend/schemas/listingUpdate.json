@@ -1,0 +1,24 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "$id": "http://our.company.com/jobUpdate.schema.json",
+  "type": "object",
+  "properties": {
+    "price": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 30
+    },
+    "description": {
+      "type": "integer",
+      "minimum": 0
+    },
+    "photoUrl": {
+      "type": "string",
+      "pattern": "0|(0?\\.[0-9]+)"
+    }
+  },
+  "additionalProperties": false,
+  "required": [
+    "title"
+  ]
+}
