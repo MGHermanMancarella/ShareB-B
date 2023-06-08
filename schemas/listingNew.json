@@ -4,8 +4,9 @@
   "type": "object",
   "properties": {
     "price": {
-      "type": "integer",
-      "minimum": 0
+      "type": "string",
+      "pattern": "([0-9])"
+
     },
     "host_user": {
       "type": "string",
@@ -25,6 +26,10 @@
       "pattern": "0|(0?\\.[0-9]+)",
       "maxLength": 5
     },
+    "address": {
+      "type": "string",
+      "maxLength": 25
+    },
     "description": {
       "type": "string",
       "minLength": 10
@@ -37,11 +42,12 @@
   },
   "additionalProperties": false,
   "required": [
-    "photo_url",
     "price",
     "host_user",
     "city",
     "zipcode",
-    "description"
+    "address",
+    "description",
+    "state"
   ]
 }

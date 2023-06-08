@@ -181,11 +181,3 @@ class User {
 
 module.exports = User;
 
-/**
- * l.listing_id,
-      l.price,
-      l.description,
-      l.photo_url
-
-       LEFT JOIN listings l ON u.username = l.host_user
- */

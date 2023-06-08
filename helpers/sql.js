@@ -10,11 +10,11 @@ const { BadRequestError } = require("../expressError");
  *
  * @param dataToUpdate {Object} {field1: newVal, field2: newVal, ...}
  * @param jsToSql {Object} maps js-style data fields to database column names,
- *   like { firstName: "first_name", age: "age" }
+ *   like { price: "price", photoUrl: "photo_url" }
  *
  * @returns {Object} {sqlSetCols, dataToUpdate}
  *
- * @example {firstName: 'Aliya', age: 32} =>
+ * @example {price: 200, photoUrl: http://example.com} =>
  *   { setCols: '"first_name"=$1, "age"=$2',
  *     values: ['Aliya', 32] }
  */
@@ -39,10 +39,9 @@ function sqlWhereClause(filterBy, jsToSql) {
   if (keys.length === 0) {
     return { whereClause: "", filterValues: [] };
   }
-
   // Add %% to description, city and state search query
-  if ("descriptionLike" in filterBy) {
-    filterBy["descriptionLike"] = "%" + filterBy["descriptionLike"] + "%";
+  if ("description" in filterBy) {
+    filterBy["description"] = "%" + filterBy["description"] + "%";
   }
   if ("city" in filterBy) {
     filterBy["city"] = "%" + filterBy["city"] + "%";
@@ -53,9 +52,10 @@ function sqlWhereClause(filterBy, jsToSql) {
 
   // sqlClauses is an array of strings that can proceed WHERE in an SQL query
   const sqlClauses = keys.map(
-    (colName, idx) => `${jsToSql[colName]} ILIKE $${idx + 1}`
+    (colName, idx) => `${jsToSql[colName] || colName} ILIKE $${idx + 1}`
   );
-
+  console.log("sqlClauses", sqlClauses)
+console.log("sqlClausessqlClausessqlClauses",sqlClauses)
   return {
     whereClause: "WHERE " + sqlClauses.join(" AND "),
     filterValues: Object.values(filterBy),

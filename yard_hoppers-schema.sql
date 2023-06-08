@@ -16,7 +16,7 @@ CREATE TABLE listings (
   zipcode CHAR(5) CHECK (zipcode ~ '^[0-9]{5}$'),
   address VARCHAR(25),
   description TEXT NOT NULL,
-  photo_url VARCHAR(100) NOT NULL,
+  photo_url VARCHAR(500) NOT NULL,
   CONSTRAINT unique_address UNIQUE (address)
 );
 CREATE TABLE messages (

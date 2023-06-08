@@ -15,7 +15,7 @@ class Listing {
    *                  photo_url,
    *                  city,
    *                  state,
-   *                  zip,
+   *                  zipcode,
    *                  address
    *                 }
    *
@@ -26,8 +26,7 @@ class Listing {
    *           photo_url,
    *           city,
    *           state,
-   *           zip,
-   *           address
+   *           zipcode,
    *          }
    *
    * Throws BadRequestError if listing already in database.
@@ -40,18 +39,19 @@ class Listing {
     photo_url,
     city,
     state,
-    zipcode
+    zipcode,
+    address
   }) {
-    // const duplicateCheck = await db.query(
-    //   `
-    //     SELECT address
-    //     FROM listings
-    //     WHERE address = $1`,
-    //   [address]
-    // )
+    const duplicateCheck = await db.query(
+      `
+        SELECT address
+        FROM listings
+        WHERE address = $1`,
+      [address]
+    )
 
-    // if (duplicateCheck.rows[0])
-    //   throw new BadRequestError(`Duplicate listing at this address: ${address}`)
+    if (duplicateCheck.rows[0])
+      throw new BadRequestError(`Duplicate listing at this address: ${address}`)
 
     const result = await db.query(
       `
@@ -60,9 +60,10 @@ class Listing {
                                         city,
                                         state,
                                         zipcode,
+                                        address,
                                         description,
                                         photo_url)
-                VALUES ($1, $2, $3, $4, $5, $6, $7)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
                 RETURNING
                 listing_id,
                 host_user,
@@ -72,7 +73,7 @@ class Listing {
                 zipcode,
                 description,
                 photo_url`,
-      [host_user, price, city, state, zipcode, description, photo_url]
+      [host_user, price, city, state, zipcode, address, description, photo_url]
     );
     const listing = result.rows[0];
 
@@ -88,15 +89,13 @@ class Listing {
    *             photo_url,
    *             city,
    *             state,
-   *             zip,
-   *             address
-   *            }
-   *        ...]
+   *             zipcode,
+   *             description,
+   *             photo_url,
+   *            } ...]
    *
-   * Acceptable search terms: (strings)
-   *   descriptionLike
-   *   city
-   *   state
+   * Acceptable search terms: 
+   *    - any values from listings
    *
    * Throws NotFoundError if not found.
    *
@@ -106,7 +105,9 @@ class Listing {
     const { whereClause, filterValues } = sqlWhereClause(filter, {
       listingId: "listing_id",
       hostUser: "host_user",
+      photoUrl: "photo_url"
     });
+    console.log("whereClause, filterValues", whereClause, filterValues)
 
     const listingsRes = await db.query(
       `
@@ -171,23 +172,35 @@ class Listing {
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
    *
-   * Data can include: {name, description, numEmployees, logoUrl}
+   * Data can include: {
+        price,
+        description,
+        photo_url
+      }
    *
-   * Returns {listingId, name, description, numEmployees, logoUrl}
+   * Returns {
+        listing_id,
+        host_user,
+        price,
+        description,
+        photo_url
+      }
    *
    * Throws NotFoundError if not found.
    */
 
   static async update(listingId, data) {
-    const { setCols, values } = sqlForPartialUpdate(data, {
-      photoUrl: "photo_url",
+    const { setCols, values } = sqlForPartialUpdate(data,  {
+      listingId: "listing_id",
+      hostUser: "host_user",
+      photoUrl: "photo_url"
     });
     const listingIdVarIdx = "$" + (values.length + 1);
 
     const querySql = `
         UPDATE listings
         SET ${setCols}
-        WHERE listingId = ${listingIdVarIdx}
+        WHERE listing_id = ${listingIdVarIdx}
         RETURNING
         listing_id,
         host_user,
