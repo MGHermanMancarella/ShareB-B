@@ -27,7 +27,7 @@
     },
     "zipcode": {
       "type": "string",
-      "pattern": "0|(0?\\.[0-9]+)",
+
       "maxLength": 5
     },
     "address": {
@@ -37,14 +37,9 @@
     "description": {
       "type": "string",
       "minLength": 10
-    },
-    "photo_url": {
-      "type": "string",
-      "maxLength": 500,
-      "format": "uri"
     }
   },
-  "additionalProperties": false,
+  "additionalProperties": true,
   "required": [
     "price",
     "host_user",
