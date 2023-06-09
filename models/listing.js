@@ -34,6 +34,7 @@ class Listing {
 
   static async create({
     host_user,
+    title,
     price,
     description,
     photo_url,
@@ -58,6 +59,7 @@ class Listing {
     const result = await db.query(
       `
                 INSERT INTO listings (host_user,
+                                        title,
                                         price,
                                         city,
                                         state,
@@ -65,7 +67,7 @@ class Listing {
                                         address,
                                         description,
                                         photo_url)
-                VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+                VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING
                 listing_id,
                 host_user,
@@ -75,7 +77,7 @@ class Listing {
                 zipcode,
                 description,
                 photo_url`,
-      [host_user, price, city, state, zipcode, address, description, photo_url]
+      [host_user, title, price, city, state, zipcode, address, description, photo_url]
     );
     const listing = result.rows[0];
 

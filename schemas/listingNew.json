@@ -6,7 +6,11 @@
     "price": {
       "type": "string",
       "pattern": "([0-9])"
-
+    },
+    "title": {
+      "type": "string",
+      "minLength": 1,
+      "maxLength": 60
     },
     "host_user": {
       "type": "string",

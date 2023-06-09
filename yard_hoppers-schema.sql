@@ -9,6 +9,7 @@ CREATE TABLE users (
 );
 CREATE TABLE listings (
   listing_id SERIAL PRIMARY KEY,
+  title VARCHAR(30),
   host_user VARCHAR(25) REFERENCES users(username),
   price INT NOT NULL,
   city VARCHAR(30) NOT NULL,
