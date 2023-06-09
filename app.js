@@ -9,14 +9,14 @@ const morgan = require('morgan')
 const { authenticateJWT } = require("./middleware/auth");
 const app = express();
 
-
-const authRoutes = require('./routes/auth');
-const listingRoutes = require('./routes/listings')
-
 app.use(cors());
 app.use(express.json());
 app.use(morgan("tiny"));
 app.use(authenticateJWT);
+
+const authRoutes = require('./routes/auth');
+const listingRoutes = require('./routes/listings')
+
 
 
 app.use('/auth', authRoutes);
