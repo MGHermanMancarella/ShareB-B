@@ -5,6 +5,7 @@
 const jwt = require("jsonwebtoken");
 const { SECRET_KEY } = require("../config");
 const { UnauthorizedError } = require("../expressError");
+const Listing = require("../models/listing");
 
 
 /** Middleware: Authenticate user.
@@ -60,21 +61,29 @@ function ensureAdmin(req, res, next) {
  *  If not, raises Unauthorized.
  */
 
-function ensureCorrectUserOrAdmin(req, res, next) {
+
+async function ensureCorrectUserOrAdmin( req, res, next) {
   const user = res.locals.user;
   const username = res.locals.user?.username;
-  if (username && (username === req.params.username || user.isAdmin === true)) {
-    return next();
+  
+  try {
+    const listing = await Listing.getListId(req.params.listing_id);
+
+    if (username && ( username === listing[0].host_user )) {
+      return next();
+    }
+
+    throw new UnauthorizedError();
+
+  } catch (err) {
+    return next(err);
   }
-
-  throw new UnauthorizedError();
 }
-
 
 
 module.exports = {
   authenticateJWT,
   ensureLoggedIn,
   ensureAdmin,
-  ensureCorrectUserOrAdmin,
+  ensureCorrectUserOrAdmin
 };

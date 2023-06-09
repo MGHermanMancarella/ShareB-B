@@ -6,7 +6,7 @@ const jsonschema = require("jsonschema");
 const express = require("express");
 const multer = require("multer");
 
-const { BadRequestError, UnauthorizedError } = require("../expressError");
+const { BadRequestError, UnauthorizedError, NotFoundError } = require("../expressError");
 const {
   ensureCorrectUserOrAdmin,
   ensureLoggedIn,
@@ -103,23 +103,22 @@ router.get("/", async function (req, res, next) {
   return res.json({ listings });
 });
 
-/** GET /[listing_id]  =>  { listing... }
+/** GET listings by username:
+ * 
+ * /[username]  =>  { listing... }
  *
- * [{ listing_id,
- *           host_user,
- *           price,
- *           description,
- *           photo_url,
- *           city,
- *           state,
- *           zipcode,
- *          }...]
+ * Returns: [ { listing_id,
+ *              price,
+ *              description,
+ *              photo_url
+ *            }...
+ *          ]
  *
  * Authorization required: none
  */
 
-router.get("/:listing_id", async function (req, res, next) {
-  const listing = await Listing.get(req.params.listing_id);
+router.get("/:username", async function (req, res, next) {
+  const listing = await Listing.get(req.params.username);
   return res.json({ listing });
 });
 

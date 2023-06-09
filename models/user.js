@@ -15,8 +15,7 @@ const { BCRYPT_WORK_FACTOR } = require("../config.js");
 class User {
   /** authenticate user with username, password.
    *
-   * Returns { username, first_name, last_name, email, listings }
-   *    where listings is [{listing_id, price, description, photo_url}]
+   * Returns { username, first_name, last_name, email, is_admin }
    *
    * Throws UnauthorizedError is user not found or wrong password.
    **/
@@ -31,13 +30,8 @@ class User {
              u.first_name AS "firstName",
              u.last_name AS "lastName",
              u.email,
-             u.bookings,
-             l.listing_id,
-             l.price,
-             l.description,
-             l.photo_url
+             u.bookings
       FROM users u
-      LEFT JOIN listings l ON u.username = l.host_user
       WHERE u.username = $1`,
       [username]
     );
@@ -50,33 +44,52 @@ class User {
       const isValid = await bcrypt.compare(password, user.password);
       if (isValid === true) {
         delete user.password;
-        const listings = [];
 
-
-        if (user.bookings) {
-
-        listings = user.map(
-          ({ listing_id, price, description, photo_url }) => ({
-            listing_id,
-            price,
-            description,
-            photo_url,
-          })
-        )
-        }
-
-
-        return {
-          username: user.username,
-          first_name: user.firstName,
-          last_name: user.lastName,
-          email: user.email,
-          listings: listings
-        };
+        return user;
       }
     }
 
     throw new UnauthorizedError("Invalid username/password");
+  }
+
+  /** Given a username, return data about user
+   *
+   * Returns { username, first_name, last_name, email, listings }
+   *    where listings is [{listing_id, price, description, photo_url}]
+   *
+   * Throws UnauthorizedError is user not found or wrong password.
+   **/
+  static async getUserdata(username) {
+console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
+
+    const userRes = await db.query(
+      `
+      SELECT u.username,
+                 u.password,
+                 u.first_name AS "firstName",
+                 u.last_name AS "lastName",
+                 u.email,
+                 u.bookings
+          FROM users u
+          WHERE u.username = $1`,
+      [username]
+    );
+
+    const user = userRes.rows[0];
+    if (!user) throw new NotFoundError(`No user: ${username}`);
+
+    const listings = await db.query(
+      `SELECT listing_id,
+                 price,
+                 description,
+                 photo_url
+          FROM listings WHERE host_user = $1
+          ORDER BY listing_id`,
+      [username]
+    );
+
+    user.listings = listings.rows;
+    return user;
   }
 
   /** Register user with data.
@@ -123,6 +136,54 @@ class User {
 
     return user;
   }
+/** Update user data with `data`.
+   *
+   * This is a "partial update" --- it's fine if data doesn't contain
+   * all the fields; this only changes provided ones.
+   *
+   * Data can include:
+   *   { firstName, lastName, password, email, isAdmin }
+   *
+   * Returns { username, firstName, lastName, email, isAdmin }
+   *
+   * Throws NotFoundError if not found.
+   *
+   * WARNING: this function can set a new password or make a user an admin.
+   * Callers of this function must be certain they have validated inputs to this
+   * or a serious security risks are opened.
+   */
+
+static async update(username, data) {
+  if (data.password) {
+    data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
+  }
+
+  const { setCols, values } = sqlForPartialUpdate(
+      data,
+      {
+        firstName: "first_name",
+        lastName: "last_name",
+        isAdmin: "is_admin",
+      });
+  const usernameVarIdx = "$" + (values.length + 1);
+
+  const querySql = `
+      UPDATE users
+      SET ${setCols}
+      WHERE username = ${usernameVarIdx}
+      RETURNING username,
+          first_name AS "firstName",
+          last_name AS "lastName",
+          email,
+          is_admin AS "isAdmin"`;
+  const result = await db.query(querySql, [...values, username]);
+  const user = result.rows[0];
+
+  if (!user) throw new NotFoundError(`No user: ${username}`);
+
+  delete user.password;
+  return user;
+}
 
   /** Delete given user from database; returns undefined. */
 
@@ -180,4 +241,3 @@ class User {
 }
 
 module.exports = User;
-

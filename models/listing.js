@@ -40,7 +40,7 @@ class Listing {
     city,
     state,
     zipcode,
-    address
+    address,
   }) {
     const duplicateCheck = await db.query(
       `
@@ -48,10 +48,12 @@ class Listing {
         FROM listings
         WHERE address = $1`,
       [address]
-    )
+    );
 
     if (duplicateCheck.rows[0])
-      throw new BadRequestError(`Duplicate listing at this address: ${address}`)
+      throw new BadRequestError(
+        `Duplicate listing at this address: ${address}`
+      );
 
     const result = await db.query(
       `
@@ -94,7 +96,7 @@ class Listing {
    *             photo_url,
    *            } ...]
    *
-   * Acceptable search terms: 
+   * Acceptable search terms:
    *    - any values from listings
    *
    * Throws NotFoundError if not found.
@@ -105,9 +107,9 @@ class Listing {
     const { whereClause, filterValues } = sqlWhereClause(filter, {
       listingId: "listing_id",
       hostUser: "host_user",
-      photoUrl: "photo_url"
+      photoUrl: "photo_url",
     });
-    console.log("whereClause, filterValues", whereClause, filterValues)
+    console.log("whereClause, filterValues", whereClause, filterValues);
 
     const listingsRes = await db.query(
       `
@@ -143,7 +145,7 @@ class Listing {
    * Throws NotFoundError if not found.
    **/
 
-  static async get(listing_id) {
+  static async getListId(listing_id) {
     const listingRes = await db.query(
       `
       SELECT
@@ -167,6 +169,37 @@ class Listing {
     return listing;
   }
 
+  /** Given a username, return data about their listings.
+   *
+   * Returns [ { listing_id,
+   *              price,
+   *              description,
+   *              photo_url
+   *            }...
+   *          ]
+   *
+   * Throws NotFoundError if not found.
+   **/
+
+  static async get(username) {
+    const listingRes = await db.query(
+          `SELECT listing_id,
+                  price,
+                  description,
+                  photo_url,
+                  host_user
+          FROM listings WHERE host_user = $1
+          ORDER BY listing_id`,
+      [username]
+    );
+
+    const listings = listingRes.rows;
+
+    if (!listings) throw new NotFoundError(`No listings by: ${username}`);
+
+    return listings;
+  }
+
   /** Update listing data with `data`.
    *
    * This is a "partial update" --- it's fine if data doesn't contain all the
@@ -188,14 +221,14 @@ class Listing {
    *
    * Throws NotFoundError if not found.
    */
-//TODO: photo will need to be async and upload to s3 and then return the url
-// it's gonna be a whole thing.
+  //TODO: photo will need to be async and upload to s3 and then return the url
+  // it's gonna be a whole thing.
 
   static async update(listingId, data) {
-    const { setCols, values } = sqlForPartialUpdate(data,  {
+    const { setCols, values } = sqlForPartialUpdate(data, {
       listingId: "listing_id",
       hostUser: "host_user",
-      photoUrl: "photo_url"
+      photoUrl: "photo_url",
     });
     const listingIdVarIdx = "$" + (values.length + 1);
 
