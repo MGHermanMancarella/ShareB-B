@@ -7,7 +7,7 @@ const jsonschema = require("jsonschema");
 const User = require("../models/user");
 const express = require("express");
 const router = new express.Router();
-const { createToken } = require("../tokens");
+const { createToken } = require("../helpers/tokens");
 const userAuthSchema = require("../schemas/userAuth.json");
 const userRegisterSchema = require("../schemas/userRegister.json");
 const { BadRequestError } = require("../expressError");
@@ -20,26 +20,23 @@ const { BadRequestError } = require("../expressError");
  */
 
 router.post("/token", async function (req, res, next) {
- 
-  const validator = jsonschema.validate(
-    req.body,
-    userAuthSchema,
-    {required: true}
-  );
+  console.log("req.body ======> ", req.body);
+  const validator = jsonschema.validate(req.body, userAuthSchema, {
+    required: true,
+  });
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
   const { username, password } = req.body;
 
   const user = await User.authenticate(username, password);
-console.log("useruseruser", user)
+  console.log("useruseruser", user);
   const token = createToken(user);
-  console.log("tokentoken", token)
+  console.log("tokentoken", token);
   return res.json({ token });
 });
-
 
 /** POST /auth/register:   { user } => { token }
  *
@@ -51,20 +48,17 @@ console.log("useruseruser", user)
  */
 
 router.post("/register", async function (req, res, next) {
-  const validator = jsonschema.validate(
-    req.body,
-    userRegisterSchema,
-    {required: true}
-  );
+  const validator = jsonschema.validate(req.body, userRegisterSchema, {
+    required: true,
+  });
   if (!validator.valid) {
-    const errs = validator.errors.map(e => e.stack);
+    const errs = validator.errors.map((e) => e.stack);
     throw new BadRequestError(errs);
   }
 
-  const newUser = await User.register({ ...req.body});
+  const newUser = await User.register({ ...req.body });
   const token = createToken(newUser);
   return res.status(201).json({ token });
 });
-
 
 module.exports = router;

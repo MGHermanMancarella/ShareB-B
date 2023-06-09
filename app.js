@@ -5,7 +5,7 @@
 const express = require("express");
 const cors = require("cors");
 require("dotenv").config();
-const morgan = require('morgan')
+const morgan = require("morgan");
 const { authenticateJWT } = require("./middleware/auth");
 const app = express();
 
@@ -14,15 +14,11 @@ app.use(express.json());
 app.use(morgan("tiny"));
 app.use(authenticateJWT);
 
-const authRoutes = require('./routes/auth');
-const listingRoutes = require('./routes/listings')
+const authRoutes = require("./routes/auth");
+const listingRoutes = require("./routes/listings");
 
-
-
-app.use('/auth', authRoutes);
-app.use('/listings', listingRoutes);
-
-
+app.use("/auth", authRoutes);
+app.use("/listings", listingRoutes);
 
 /** Handle 404 errors -- this matches everything */
 app.use(function (req, res, next) {
