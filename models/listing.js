@@ -11,6 +11,7 @@ class Listing {
    *
    * data should be { host_user,
    *                  price,
+   *                  title,
    *                  description,
    *                  photo_url,
    *                  city,
@@ -22,6 +23,7 @@ class Listing {
    * Returns { listing_id,
    *           host_user,
    *           price,
+   *           title,
    *           description,
    *           photo_url,
    *           city,
@@ -69,6 +71,7 @@ class Listing {
                                         photo_url)
                 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
                 RETURNING
+                title,
                 listing_id,
                 host_user,
                 price,
@@ -88,6 +91,7 @@ class Listing {
    *
    * Returns [{ listing_id,
    *             host_user,
+   *             title,
    *             price,
    *             description,
    *             photo_url,
@@ -118,6 +122,7 @@ class Listing {
         SELECT listing_id,
         host_user,
         price,
+        title,
         city,
         state,
         zipcode,
@@ -137,6 +142,7 @@ class Listing {
    * Returns { listing_id,
                 host_user,
                 price,
+                title,
                 city,
                 state,
                 zipcode,
@@ -154,6 +160,7 @@ class Listing {
             listing_id,
             host_user,
             price,
+            title,
             city,
             state,
             zipcode,
@@ -175,6 +182,7 @@ class Listing {
    *
    * Returns [ { listing_id,
    *              price,
+   *              title,
    *              description,
    *              photo_url
    *            }...
@@ -187,6 +195,7 @@ class Listing {
     const listingRes = await db.query(
           `SELECT listing_id,
                   price,
+                  title,
                   description,
                   photo_url,
                   host_user
@@ -209,6 +218,7 @@ class Listing {
    *
    * Data can include: {
         price,
+        title,
         description,
         photo_url
       }
@@ -217,6 +227,7 @@ class Listing {
         listing_id,
         host_user,
         price,
+        title,
         description,
         photo_url
       }
@@ -242,6 +253,7 @@ class Listing {
         listing_id,
         host_user,
         price,
+        title,
         description,
         photo_url as photoUrl`;
     const result = await db.query(querySql, [...values, listingId]);

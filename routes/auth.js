@@ -14,28 +14,30 @@ const { BadRequestError } = require("../expressError");
 
 /** POST /auth/token:  { username, password } => { token }
  *
- * Returns JWT token which can be used to authenticate further requests.
+ * Login: Returns JWT token which can be used to authenticate further requests.
  *
  * Authorization required: none
  */
 
 router.post("/token", async function (req, res, next) {
-  console.log("req.body ======> ", req.body);
-  const validator = jsonschema.validate(req.body, userAuthSchema, {
-    required: true,
-  });
-  if (!validator.valid) {
-    const errs = validator.errors.map((e) => e.stack);
-    throw new BadRequestError(errs);
+  try {
+    const validator = jsonschema.validate(req.body, userAuthSchema, {
+      required: true,
+    });
+
+    if (!validator.valid) {
+      const errs = validator.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
+    }
+
+    const { username, password } = req.body;
+    const user = await User.authenticate(username, password);
+    const token = createToken(user);
+    return res.json({ token });
+
+  } catch (err) {
+    next(err);
   }
-
-  const { username, password } = req.body;
-
-  const user = await User.authenticate(username, password);
-  console.log("useruseruser", user);
-  const token = createToken(user);
-  console.log("tokentoken", token);
-  return res.json({ token });
 });
 
 /** POST /auth/register:   { user } => { token }
