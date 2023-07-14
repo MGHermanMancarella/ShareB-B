@@ -22,7 +22,6 @@ class User {
 
   static async authenticate(username, password) {
     // try to find the user first
-    console.log("MADE IT HERE");
     const result = await db.query(
       `
       SELECT u.username,
@@ -38,7 +37,6 @@ class User {
     );
 
     const user = result.rows[0];
-    console.log("user ===> ", user);
 
     if (user) {
       // compare hashed password to a new hash from password
@@ -61,7 +59,6 @@ class User {
    * Throws UnauthorizedError is user not found or wrong password.
    **/
   static async getUserdata(username) {
-// console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
 
     const userRes = await db.query(
       `
