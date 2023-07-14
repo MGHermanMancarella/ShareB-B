@@ -4,7 +4,8 @@
   "type": "object",
   "properties": {
     "price": {
-      "type": "integer"
+      "type": "string",
+      "pattern": "^[0-9]+$"
     },
     "title": {
       "type": "string",
