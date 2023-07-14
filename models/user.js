@@ -30,7 +30,8 @@ class User {
              u.first_name AS "firstName",
              u.last_name AS "lastName",
              u.email,
-             u.bookings
+             u.bookings,
+             is_host
       FROM users u
       WHERE u.username = $1`,
       [username]
@@ -60,7 +61,7 @@ class User {
    * Throws UnauthorizedError is user not found or wrong password.
    **/
   static async getUserdata(username) {
-console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
+// console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
 
     const userRes = await db.query(
       `
@@ -69,7 +70,8 @@ console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
                  u.first_name AS "firstName",
                  u.last_name AS "lastName",
                  u.email,
-                 u.bookings
+                 u.bookings,
+                 is_host
           FROM users u
           WHERE u.username = $1`,
       [username]
@@ -99,7 +101,7 @@ console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
    * Throws BadRequestError on duplicates.
    **/
 
-  static async register({ username, password, firstName, lastName, email }) {
+  static async register({ username, password, firstName, lastName, email, is_host }) {
     const duplicateCheck = await db.query(
       `
         SELECT username
@@ -121,13 +123,15 @@ console.log("GETUSERDATAGETUSERDATAGETUSERDATA", username)
                  password,
                  first_name,
                  last_name,
-                 email
+                 email,
+                 is_host
                  )
-                VALUES ($1, $2, $3, $4, $5)
+                VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING
                     username,
                     first_name AS "firstName",
-                    last_name AS "lastName",
+                    last_name AS "lastName"
+                    is_host,
                     email`,
       [username, hashedPassword, firstName, lastName, email]
     );

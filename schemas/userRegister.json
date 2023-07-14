@@ -28,8 +28,18 @@
       "minLength": 6,
       "maxLength": 60,
       "format": "email"
+    },
+    "is_host": {
+      "type": "boolean"
     }
   },
   "additionalProperties": false,
-  "required": ["username", "firstName", "lastName", "password", "email"]
+  "required": [
+    "username",
+    "firstName",
+    "lastName",
+    "password",
+    "email",
+    "is_host"
+  ]
 }
