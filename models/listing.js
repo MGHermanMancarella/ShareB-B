@@ -115,7 +115,7 @@ class Listing {
       hostUser: "host_user",
       photoUrl: "photo_url",
     });
-    console.log("whereClause, filterValues", whereClause, filterValues);
+    // console.log("whereClause, filterValues", whereClause, filterValues);
 
     const listingsRes = await db.query(
       `
