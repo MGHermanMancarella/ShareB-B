@@ -29,7 +29,8 @@ class User {
              u.first_name AS "firstName",
              u.last_name AS "lastName",
              u.email,
-             u.bookings
+             u.bookings,
+             is_host
       FROM users u
       WHERE u.username = $1`,
       [username]
@@ -66,7 +67,8 @@ class User {
                  u.first_name AS "firstName",
                  u.last_name AS "lastName",
                  u.email,
-                 u.bookings
+                 u.bookings,
+                 is_host
           FROM users u
           WHERE u.username = $1`,
       [username]
@@ -96,7 +98,7 @@ class User {
    * Throws BadRequestError on duplicates.
    **/
 
-  static async register({ username, password, firstName, lastName, email }) {
+  static async register({ username, password, firstName, lastName, email, is_host }) {
     const duplicateCheck = await db.query(
       `
         SELECT username
@@ -119,12 +121,14 @@ class User {
                  first_name,
                  last_name,
                  email,
+                 is_host
                  )
                 VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING
                     username,
                     first_name AS "firstName",
                     last_name AS "lastName"
+                    is_host,
                     email`,
       [username, hashedPassword, firstName, lastName, email]
     );
