@@ -65,7 +65,6 @@ router.get("/", ensureAdmin, async function (req, res, next) {
  **/
 
 router.get("/:username", async function (req, res, next) {
-
   const user = await User.getUserdata(req.params.username);
   return res.json({ user });
 });

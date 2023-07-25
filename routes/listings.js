@@ -45,7 +45,7 @@ const router = new express.Router();
  *           state,
  *           zipcode,
  *          }
- *  
+ *
  * Authorization required: token (registered user)
  */
 
@@ -90,7 +90,7 @@ router.post(
  *           state,
  *           zipcode,
  *          }...]
- * 
+ *
  * Can filter on any of the above value
  *
  * Authorization required: none
@@ -103,8 +103,8 @@ router.get("/", async function (req, res, next) {
   return res.json({ listings });
 });
 
-/** GET listings by username:
- * 
+/** GET listings by listing_id:
+ *
  * /[username]  =>  { listing... }
  *
  * Returns: [ { listing_id,
@@ -117,8 +117,9 @@ router.get("/", async function (req, res, next) {
  * Authorization required: none
  */
 
-router.get("/:username", async function (req, res, next) {
-  const listing = await Listing.get(req.params.username);
+router.get("/:listing_id", async function (req, res, next) {
+  console.log("RESPONSE FROM GET LISTING ROUTE ===>", req.params.listing_id)
+  const listing = await Listing.getListId(req.params.listing_id);
   return res.json({ listing });
 });
 
@@ -154,7 +155,7 @@ router.patch("/:listing_id",  async function (req, res, next) {
   if ( req.params.username === listing.host_id) {
 
   return res.json({ listing })
-  } 
+  }
   throw new UnauthorizedError(errs);
 });
 
