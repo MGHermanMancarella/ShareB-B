@@ -30,7 +30,7 @@ class User {
              u.last_name AS "lastName",
              u.email,
              u.bookings,
-             is_host
+             
       FROM users u
       WHERE u.username = $1`,
       [username]
@@ -59,7 +59,6 @@ class User {
    * Throws UnauthorizedError is user not found or wrong password.
    **/
   static async getUserdata(username) {
-
     const userRes = await db.query(
       `
       SELECT u.username,
@@ -68,7 +67,7 @@ class User {
                  u.last_name AS "lastName",
                  u.email,
                  u.bookings,
-                 is_host
+                 
           FROM users u
           WHERE u.username = $1`,
       [username]
@@ -98,7 +97,7 @@ class User {
    * Throws BadRequestError on duplicates.
    **/
 
-  static async register({ username, password, firstName, lastName, email, is_host }) {
+  static async register({ username, password, firstName, lastName, email }) {
     const duplicateCheck = await db.query(
       `
         SELECT username
@@ -121,14 +120,14 @@ class User {
                  first_name,
                  last_name,
                  email,
-                 is_host
+                 
                  )
                 VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING
                     username,
                     first_name AS "firstName",
                     last_name AS "lastName"
-                    is_host,
+                    ,
                     email`,
       [username, hashedPassword, firstName, lastName, email]
     );
@@ -137,7 +136,7 @@ class User {
 
     return user;
   }
-/** Update user data with `data`.
+  /** Update user data with `data`.
    *
    * This is a "partial update" --- it's fine if data doesn't contain
    * all the fields; this only changes provided ones.
@@ -154,21 +153,19 @@ class User {
    * or a serious security risks are opened.
    */
 
-static async update(username, data) {
-  if (data.password) {
-    data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
-  }
+  static async update(username, data) {
+    if (data.password) {
+      data.password = await bcrypt.hash(data.password, BCRYPT_WORK_FACTOR);
+    }
 
-  const { setCols, values } = sqlForPartialUpdate(
-      data,
-      {
-        firstName: "first_name",
-        lastName: "last_name",
-        isAdmin: "is_admin",
-      });
-  const usernameVarIdx = "$" + (values.length + 1);
+    const { setCols, values } = sqlForPartialUpdate(data, {
+      firstName: "first_name",
+      lastName: "last_name",
+      isAdmin: "is_admin",
+    });
+    const usernameVarIdx = "$" + (values.length + 1);
 
-  const querySql = `
+    const querySql = `
       UPDATE users
       SET ${setCols}
       WHERE username = ${usernameVarIdx}
@@ -177,14 +174,14 @@ static async update(username, data) {
           last_name AS "lastName",
           email,
           is_admin AS "isAdmin"`;
-  const result = await db.query(querySql, [...values, username]);
-  const user = result.rows[0];
+    const result = await db.query(querySql, [...values, username]);
+    const user = result.rows[0];
 
-  if (!user) throw new NotFoundError(`No user: ${username}`);
+    if (!user) throw new NotFoundError(`No user: ${username}`);
 
-  delete user.password;
-  return user;
-}
+    delete user.password;
+    return user;
+  }
 
   /** Delete given user from database; returns undefined. */
 
@@ -209,7 +206,7 @@ static async update(username, data) {
    * - jobId: job id
    **/
 
-  static async applyToJob(username, jobId) {
+  static async applyToListing(username, jobId) {
     const preCheck = await db.query(
       `
         SELECT id

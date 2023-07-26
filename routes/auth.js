@@ -1,89 +1,66 @@
 "use strict";
 
-/** Convenience middleware to handle common auth cases in routes. */
+/** Routes for authentication. */
 
-const jwt = require("jsonwebtoken");
-const { SECRET_KEY } = require("../config");
-const { UnauthorizedError } = require("../expressError");
-const Listing = require("../models/listing");
+const jsonschema = require("jsonschema");
 
+const User = require("../models/user");
+const express = require("express");
+const router = new express.Router();
+const { createToken } = require("../helpers/tokens");
+const userAuthSchema = require("../schemas/userAuth.json");
+const userRegisterSchema = require("../schemas/userRegister.json");
+const { BadRequestError } = require("../expressError");
 
-/** Middleware: Authenticate user.
+/** POST /auth/token:  { username, password } => { token }
  *
- * If a token was provided, verify it, and, if valid, store the token payload
- * on res.locals (this will include the username and isAdmin field.)
+ * Login: Returns JWT token which can be used to authenticate further requests.
  *
- * It's not an error if no token was provided or if the token is not valid.
+ * Authorization required: none
  */
 
-function authenticateJWT(req, res, next) {
-  const authHeader = req.headers?.authorization;
-  if (authHeader) {
-    const token = authHeader.replace(/^[Bb]earer /, "").trim();
-
-    try {
-      res.locals.user = jwt.verify(token, SECRET_KEY);
-    } catch (err) {
-      /* ignore invalid tokens (but don't store user!) */
-    }
-  }
-  return next();
-
-}
-
-/** Middleware to use when they must be logged in.
- *
- * If not, raises Unauthorized.
- */
-
-function ensureLoggedIn(req, res, next) {
-  if (res.locals.user?.username) return next();
-  throw new UnauthorizedError();
-}
-
-
-/** Middleware to use when they be logged in as an admin user.
- *
- *  If not, raises Unauthorized.
- */
-
-function ensureAdmin(req, res, next) {
-  if (res.locals.user?.username && res.locals.user?.isAdmin === true) {
-    return next();
-  }
-  throw new UnauthorizedError();
-
-}
-
-/** Middleware to use when they must provide a valid token & be user matching
- *  username provided as route param.
- *
- *  If not, raises Unauthorized.
- */
-
-
-async function ensureCorrectUserOrAdmin( req, res, next) {
-  const user = res.locals.user;
-  const username = res.locals.user?.username;
-  
+router.post("/token", async function (req, res, next) {
   try {
-    const listing = await Listing.getListId(req.params.listing_id);
+    const validator = jsonschema.validate(req.body, userAuthSchema, {
+      required: true,
+    });
 
-    if (username && ( username === listing[0].host_user )) {
-      return next();
+    if (!validator.valid) {
+      const errs = validator.errors.map((e) => e.stack);
+      throw new BadRequestError(errs);
     }
 
-    throw new UnauthorizedError();
+    const { username, password } = req.body;
+    const user = await User.authenticate(username, password);
+    const token = createToken(user);
+    return res.json({ token });
 
   } catch (err) {
-    return next(err);
+    next(err);
   }
-}
+});
 
+/** POST /auth/register:   { user } => { token }
+ *
+ * user must include { username, password, firstName, lastName, email }
+ *
+ * Returns JWT token which can be used to authenticate further requests.
+ *
+ * Authorization required: none
+ */
 
-module.exports = {
-  authenticateJWT,
-  ensureLoggedIn,
-  ensureAdmin,
-  ensureCorrectUserOrAdmin
-};
+router.post("/register", async function (req, res, next) {
+  const validator = jsonschema.validate(req.body, userRegisterSchema, {
+    required: true,
+  });
+  if (!validator.valid) {
+    const errs = validator.errors.map((e) => e.stack);
+    throw new BadRequestError(errs);
+  }
+
+  const newUser = await User.register({ ...req.body });
+  const token = createToken(newUser);
+  return res.status(201).json({ token });
+});
+
+module.exports = router;
