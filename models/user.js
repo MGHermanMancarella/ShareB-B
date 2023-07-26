@@ -29,8 +29,7 @@ class User {
              u.first_name AS "firstName",
              u.last_name AS "lastName",
              u.email,
-             u.bookings,
-             
+             u.bookings
       FROM users u
       WHERE u.username = $1`,
       [username]
@@ -66,8 +65,7 @@ class User {
                  u.first_name AS "firstName",
                  u.last_name AS "lastName",
                  u.email,
-                 u.bookings,
-                 
+                 u.bookings                 
           FROM users u
           WHERE u.username = $1`,
       [username]
@@ -119,15 +117,13 @@ class User {
                  password,
                  first_name,
                  last_name,
-                 email,
-                 
+                 email                 
                  )
                 VALUES ($1, $2, $3, $4, $5, $6)
                 RETURNING
                     username,
                     first_name AS "firstName",
-                    last_name AS "lastName"
-                    ,
+                    last_name AS "lastName",
                     email`,
       [username, hashedPassword, firstName, lastName, email]
     );
