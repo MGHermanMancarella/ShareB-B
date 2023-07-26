@@ -171,7 +171,7 @@ class Listing {
       [listing_id]
     );
 
-    const listing = listingRes.rows;
+    const listing = listingRes.rows[0];
 
     if (!listing) throw new NotFoundError(`No listing: ${listing_id}`);
 
