@@ -1,5 +1,3 @@
-# yardHoppers-backend
-
 Yard Hoppers - An Innovative Backyard Rental Platform
 
 Credit to my co-creator CodingHobo! This would not look nearly as good as it does without you!
