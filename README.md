@@ -1,6 +1,4 @@
 # yardHoppers-backend
-<img width="1913" alt="yardhoppers" src="https://github.com/MGHermanMancarella/yardHoppers-backend/assets/113940622/7f4e2efc-a75b-41d1-865b-ffe95b1d1aea">
-<img width="1915" alt="Screenshot 2023-07-13 at 6 41 37 PM (2)" src="https://github.com/MGHermanMancarella/yardHoppers-backend/assets/113940622/bd197b95-0937-413f-9e15-cc06fa13b41f">
 
 Yard Hoppers - An Innovative Backyard Rental Platform
 
@@ -18,3 +16,7 @@ To run the server on your local drive, clone the repo to your computer and run:
 ## nodemon server.js  
 
 "npm install" installs the required dependencies and nodemon runs the server. 
+
+
+<img width="1913" alt="yardhoppers" src="https://github.com/MGHermanMancarella/yardHoppers-backend/assets/113940622/7f4e2efc-a75b-41d1-865b-ffe95b1d1aea">
+<img width="1915" alt="Screenshot 2023-07-13 at 6 41 37 PM (2)" src="https://github.com/MGHermanMancarella/yardHoppers-backend/assets/113940622/bd197b95-0937-413f-9e15-cc06fa13b41f">
