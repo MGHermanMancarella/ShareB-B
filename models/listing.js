@@ -86,8 +86,8 @@ class Listing {
 
     return listing;
   }
-//TODO: Add Search Feature
-  /** Find all listings by default. Accepts search terms in the query string.
+
+  /**TODO: Find all listings by default. Accepts search terms in the query string. 
    * 
    * Returns [{ listing_id,
    *             host_user,
@@ -137,7 +137,7 @@ class Listing {
     return listingsRes.rows;
   }
 
-  /** Given a listing_id, return data about listing.
+  /**TODO: Given a listing_id, return data about listing.  
    *
    * Returns { listing_id,
                 host_user,
@@ -178,7 +178,7 @@ class Listing {
     return listing;
   }
 
-  /** Given a username, return data about their listings.
+  /**TODO: Given a username, return data about their listings. 
    *
    * Returns [ { listing_id,
    *              price,
@@ -211,7 +211,7 @@ class Listing {
     return listings;
   }
 
-  /** Update listing data with `data`.
+  /**TODO: Update listing data with `data`.  
    *
    * This is a "partial update" --- it's fine if data doesn't contain all the
    * fields; this only changes provided ones.
@@ -262,7 +262,7 @@ class Listing {
     return listing;
   }
 
-  /** Delete given listing from database; returns undefined.
+  /**TODO: Delete given listing from database; returns undefined.  
    *
    * Throws NotFoundError if listing not found.
    **/
