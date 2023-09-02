@@ -86,9 +86,9 @@ class Listing {
 
     return listing;
   }
-
+//TODO: Add Search Feature
   /** Find all listings by default. Accepts search terms in the query string.
-   *
+   * 
    * Returns [{ listing_id,
    *             host_user,
    *             title,
@@ -234,8 +234,6 @@ class Listing {
    *
    * Throws NotFoundError if not found.
    */
-  //TODO: photo will need to be async and upload to s3 and then return the url
-  // it's gonna be a whole thing.
 
   static async update(listingId, data) {
     const { setCols, values } = sqlForPartialUpdate(data, {
