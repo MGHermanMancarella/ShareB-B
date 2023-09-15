@@ -46,10 +46,27 @@ class ForbiddenError extends ExpressError {
   }
 }
 
+/** 409 BOOKING CONFLICT error. */
+
+class BookingConflictError extends ExpressError {
+  constructor(message = "Conflict in Selected Dates") {
+    super(message, 409);
+  }
+}
+
+/** 409 BOOKING error. */
+
+class BookingError extends ExpressError {
+  constructor(message = "Conflict While Booking") {
+    super(message, 409);
+  }
+}
 module.exports = {
   ExpressError,
   NotFoundError,
   UnauthorizedError,
   BadRequestError,
   ForbiddenError,
+  BookingConflictError,
+  BookingError,
 };
