@@ -31,6 +31,28 @@ CREATE TABLE bookings (
   booking_id SERIAL PRIMARY KEY,
   listing_id INT REFERENCES listings(listing_id),
   booking_user VARCHAR(25) REFERENCES users(username),
-  check_in_date DATE NOT NULL,
-  check_out_date DATE NOT NULL
+  check_in DATE NOT NULL,
+  check_out DATE NOT NULL
 );
+CREATE OR REPLACE FUNCTION book_slot(
+    desired_start_date TIMESTAMP,
+    desired_end_date TIMESTAMP
+  ) RETURNS BOOLEAN AS $$
+DECLARE overlap_count INT;
+BEGIN 
+-- Check for overlaps
+SELECT COUNT(*) INTO overlap_count
+FROM bookings
+WHERE (
+    check_in < desired_end_date
+    AND check_out > desired_start_date
+  );
+-- If no overlap, insert the booking
+IF overlap_count = 0 THEN
+INSERT INTO bookings (check_in, check_out)
+VALUES (desired_start_date, desired_end_date);
+RETURN TRUE;
+END IF;
+RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
