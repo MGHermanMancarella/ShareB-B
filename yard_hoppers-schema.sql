@@ -34,13 +34,14 @@ CREATE TABLE bookings (
   check_in DATE NOT NULL,
   check_out DATE NOT NULL
 );
+-- FUNCTION: book_slot checks dates and books if no conflict
+-- else returns COUNT if overlap
 CREATE OR REPLACE FUNCTION book_slot(
     desired_start_date TIMESTAMP,
     desired_end_date TIMESTAMP
   ) RETURNS BOOLEAN AS $$
 DECLARE overlap_count INT;
-BEGIN 
--- Check for overlaps
+BEGIN -- Check for overlaps
 SELECT COUNT(*) INTO overlap_count
 FROM bookings
 WHERE (
@@ -54,5 +55,39 @@ VALUES (desired_start_date, desired_end_date);
 RETURN TRUE;
 END IF;
 RETURN FALSE;
+END;
+$$ LANGUAGE plpgsql;
+-- FUNCTION: available_slots returns available booking windows
+CREATE OR REPLACE FUNCTION available_slots(
+    listing_id INT,
+    start_date DATE,
+    end_date DATE
+  ) RETURNS TABLE (slot_start DATE, slot_end DATE) AS $$
+DECLARE prev_end_date DATE;
+next_start_date DATE;
+BEGIN -- Initialize the previous end date to the start date.
+prev_end_date := start_date;
+-- Loop through bookings within the given date range.
+FOR next_start_date IN (
+  SELECT check_in
+  FROM bookings
+  WHERE listing_id = listing_id
+    AND check_in BETWEEN start_date AND end_date
+  ORDER BY check_in
+) LOOP IF prev_end_date < next_start_date THEN RETURN NEXT;
+-- This returns an available slot
+END IF;
+prev_end_date := (
+  SELECT check_out
+  FROM bookings
+  WHERE listing_id = listing_id
+    AND check_in = next_start_date
+);
+END LOOP;
+-- After looping through all bookings, check if there's an available slot between the last booking and the end date.
+IF prev_end_date < end_date THEN slot_start := prev_end_date;
+slot_end := end_date;
+RETURN NEXT;
+END IF;
 END;
 $$ LANGUAGE plpgsql;

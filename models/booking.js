@@ -58,6 +58,12 @@ class Booking {
         `I'm sorry, this listing is no longer active: ${data.listingID}`
       );
 
+    // Check dates for availability SELECT * FROM available_slots(1, 'desired_start_date', 'desired_end_date');
+
+
+    // get available dates: SELECT * FROM available_slots(1, '2023-10-01', '2023-10-31');
+
+
     const result = await db.query(
       `INSERT INTO bookings (listing_id,
                               booking_user,
